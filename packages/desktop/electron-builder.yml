@@ -1,12 +1,12 @@
-appId: com.aionui.app
-productName: AionUi
-executableName: AionUi
-copyright: Copyright © 2024 AionUi
+appId: io.github.mi4uu.charlietheaicorn
+productName: CharlieTheAicorn
+executableName: CharlieTheAicorn
+copyright: Based on AionUi, Copyright © 2024 AionUi
 
 protocols:
-  - name: AionUi Protocol
+  - name: CharlieTheAicorn Protocol
     schemes:
-      - aionui
+      - charlietheaicorn
 
 asar:
   smartUnpack: true
@@ -218,7 +218,7 @@ electronDownload:
 
 publish:
   provider: github
-  owner: iOfficeAI
+  owner: mi4uu
   repo: AionUi
   publishAutoUpdate: true
   releaseType: release

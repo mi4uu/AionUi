@@ -1,0 +1,8 @@
+CharlieTheAicorn
+Based on AionUi (https://github.com/iOfficeAI/AionUi), Copyright 2025 AionUi (aionui.com),
+licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This is a modified version: name, application identity, home-directory links, URL scheme and
+update source were changed. The git history lists every modified file.
+CharlieTheAicorn is not affiliated with or endorsed by AionUi. The backend (aioncore) is the
+unmodified upstream binary.

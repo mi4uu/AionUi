@@ -178,7 +178,7 @@ describe('AutoUpdaterService', () => {
 
     expect(autoUpdaterMock.setFeedURL).toHaveBeenCalledWith({
       provider: 'custom',
-      url: 'https://static.aionui.com/releases',
+      url: 'https://github.com/mi4uu/AionUi/releases/latest/download',
       updateProvider: CdnGenericProvider,
     });
   });

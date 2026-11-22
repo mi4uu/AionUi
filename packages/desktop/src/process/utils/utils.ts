@@ -104,7 +104,7 @@ export const getDataPath = (): string => {
   if (getPlatformServices().paths.isPackaged()) {
     return dataPath;
   }
-  return ensureCliSafeSymlink(dataPath, getEnvAwareName('.aionui'));
+  return ensureCliSafeSymlink(dataPath, getEnvAwareName('.charlie-the-aicorn'));
 };
 
 /**
@@ -116,7 +116,7 @@ export const getDataPath = (): string => {
 export const getConfigPath = (): string => {
   const rootPath = getElectronPathOrFallback('userData');
   const configPath = path.join(rootPath, 'config');
-  return ensureCliSafeSymlink(configPath, getEnvAwareName('.aionui-config'));
+  return ensureCliSafeSymlink(configPath, getEnvAwareName('.charlie-the-aicorn-config'));
 };
 
 /**

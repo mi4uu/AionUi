@@ -39,7 +39,7 @@ function resolvePackagedApp(projectRoot) {
       if (!fs.existsSync(macDir)) continue;
       const appBundle = fs.readdirSync(macDir).find((f) => f.endsWith('.app'));
       if (!appBundle) continue;
-      const exe = path.join(macDir, appBundle, 'Contents', 'MacOS', 'AionUi');
+      const exe = path.join(macDir, appBundle, 'Contents', 'MacOS', 'CharlieTheAicorn');
       if (fs.existsSync(exe)) return { executablePath: exe, cwd: macDir };
     }
   } else {
@@ -71,7 +71,7 @@ async function main() {
 
   if (shouldClean) {
     await killProcessByName('AionUi.exe');
-    await killProcessByName('AionUi');
+    await killProcessByName('CharlieTheAicorn');
     await killProcessByName('electron.exe');
     await killProcessByName('electron');
   }

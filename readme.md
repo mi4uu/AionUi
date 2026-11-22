@@ -1,3 +1,9 @@
+# CharlieTheAicorn
+
+> A modified fork of [AionUi](https://github.com/iOfficeAI/AionUi) (Apache-2.0), not affiliated with or endorsed by it. See [NOTICE](NOTICE). The upstream README follows.
+
+---
+
 <p align="center">
   <img src="./resources/aionui-banner-1.png" alt="AionUi - Cowork with AI Agents" width="100%">
 </p>
