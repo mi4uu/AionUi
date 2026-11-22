@@ -33,6 +33,7 @@ import { useDeepLink } from '@renderer/hooks/system/useDeepLink';
 import { useNotificationClick } from '@renderer/hooks/system/notification/useNotificationClick';
 import { useBrowserNotification } from '@renderer/hooks/system/notification/useBrowserNotification';
 import { useDesktopTurnNotification } from '@renderer/hooks/system/notification/useDesktopTurnNotification';
+import { usePermissionShadow } from '@/renderer/hooks/system/permissionShadow/usePermissionShadow';
 import { cleanupSiderTooltips } from '@renderer/utils/ui/siderTooltip';
 import { useConversationShortcuts } from '@renderer/hooks/ui/useConversationShortcuts';
 import { isElectronDesktop } from '@renderer/utils/platform';
@@ -129,6 +130,7 @@ const Layout: React.FC<{
   useNotificationClick();
   useBrowserNotification();
   useDesktopTurnNotification();
+  usePermissionShadow();
   const navigate = useNavigate();
   const location = useLocation();
   const workspaceAvailable =

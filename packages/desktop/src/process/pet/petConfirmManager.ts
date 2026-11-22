@@ -9,6 +9,7 @@ import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import type { IConfirmation } from '@/common/chat/chatLib';
 import { ipcBridge } from '@/common';
 import i18n from '@process/services/i18n';
+import { recordShadowAnswer } from '@process/bridge/permissionShadowBridge';
 import { getCachedTheme, onThemeChanged } from '@process/bridge/themeBridge';
 
 // petConfirmManager is dynamically imported → rollup places it in out/main/chunks/,
@@ -357,6 +358,9 @@ function registerIpcHandlers(): void {
           call_id: data.call_id,
           data: data.data,
         })
+        .then(() =>
+          recordShadowAnswer({ conversation_id: data.conversation_id, call_id: data.call_id, answer: data.data })
+        )
         .catch((error: unknown) => {
           console.error('[PetConfirm] confirmation.confirm.invoke failed:', error);
         });

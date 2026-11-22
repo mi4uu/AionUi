@@ -96,6 +96,7 @@ import type {
 } from '../update/updateTypes';
 import type { AgentMetadata } from '@/renderer/utils/model/agentTypes';
 import type { Theme } from '@/common/theme/types';
+import type { ShadowAnswer, ShadowObservation } from '@/common/types/permissionShadow';
 import type { AttachFolderRequest, ProjectDetailDto, ProjectEntryDto } from '@/common/types/project';
 import type { ChatFileRef, ContentEncoding } from '@/common/types/chatFile';
 import type { ProtocolDetectionRequest, ProtocolDetectionResponse } from '../utils/protocolDetector';
@@ -152,6 +153,29 @@ const httpGetClientSetting = <T>(key: string) => ({
 // ---------------------------------------------------------------------------
 // Shell — routed to POST /api/shell/*
 // ---------------------------------------------------------------------------
+/** Consent delegation, shadow mode: the main process only records, it never answers. */
+export const permissionShadow = {
+  observe: bridge.buildProvider<void, ShadowObservation>('permission-shadow.observe'),
+  answered: bridge.buildProvider<void, ShadowAnswer>('permission-shadow.answered'),
+};
+
+/** Tells shadow mode what the human answered, without delaying or failing the answer itself. */
+function tapAnswer<P, T extends { invoke: (params: P) => Promise<void> }>(
+  provider: T & { invoke: (params: P) => Promise<void> },
+  toAnswer: (params: P) => ShadowAnswer
+): T {
+  const invoke = async (params: P): Promise<void> => {
+    await provider.invoke(params);
+    try {
+      if (typeof window === 'undefined' || !window.electronAPI) return;
+      Promise.resolve(permissionShadow.answered.invoke(toAnswer(params))).catch((): void => undefined);
+    } catch {
+      // Recording is best effort.
+    }
+  };
+  return { ...provider, invoke };
+}
+
 export const shell = {
   openFile: httpPost<void, string>('/api/shell/open-file', (file_path) => ({ file_path })),
   showItemInFolder: httpPost<void, string>('/api/shell/show-item-in-folder', (file_path) => ({ file_path })),
@@ -398,16 +422,22 @@ export const conversation = {
     (p) => `/api/conversations/${p.conversation_id}/side-question`,
     (p) => ({ question: p.question })
   ),
-  confirmMessage: httpPost<void, IConfirmMessageParams>(
-    (p) => `/api/conversations/${p.conversation_id}/confirmations/${encodeURIComponent(p.call_id)}/confirm`,
-    (p) => ({ msg_id: p.msg_id, data: p.confirm_key })
+  confirmMessage: tapAnswer(
+    httpPost<void, IConfirmMessageParams>(
+      (p) => `/api/conversations/${p.conversation_id}/confirmations/${encodeURIComponent(p.call_id)}/confirm`,
+      (p) => ({ msg_id: p.msg_id, data: p.confirm_key })
+    ),
+    (p) => ({ conversation_id: p.conversation_id, call_id: p.call_id, answer: p.confirm_key })
   ),
   // Dedicated answer channel for the structured question card (AskUserQuestion)
   // — question answers must not ride the permission confirm endpoint
   // (2026-08-05 ruling). Send either answers[] or decline:true, never both.
-  answerAsk: httpPost<void, IAnswerAskParams>(
-    (p) => `/api/conversations/${p.conversation_id}/asks/${encodeURIComponent(p.request_id)}/answer`,
-    (p) => (p.decline ? { decline: true } : { answers: p.answers ?? [] })
+  answerAsk: tapAnswer(
+    httpPost<void, IAnswerAskParams>(
+      (p) => `/api/conversations/${p.conversation_id}/asks/${encodeURIComponent(p.request_id)}/answer`,
+      (p) => (p.decline ? { decline: true } : { answers: p.answers ?? [] })
+    ),
+    (p) => ({ conversation_id: p.conversation_id, call_id: p.request_id, answer: p.decline ? 'decline' : p.answers })
   ),
   listArtifacts: httpGet<IConversationArtifact[], { conversation_id: string }>(
     (p) => `/api/conversations/${p.conversation_id}/artifacts`
@@ -510,12 +540,15 @@ export const conversation = {
     }) as (p: { conversation_id: string; workspace: string; path: string; search?: string }) => Promise<IDirOrFile[]>,
   },
   confirmation: {
-    confirm: httpPost<
-      void,
-      { conversation_id: string; msg_id: string; data: unknown; call_id: string; always_allow?: boolean }
-    >(
-      (p) => `/api/conversations/${p.conversation_id}/confirmations/${encodeURIComponent(p.call_id)}/confirm`,
-      (p) => ({ msg_id: p.msg_id, data: p.data, always_allow: p.always_allow ?? false })
+    confirm: tapAnswer(
+      httpPost<
+        void,
+        { conversation_id: string; msg_id: string; data: unknown; call_id: string; always_allow?: boolean }
+      >(
+        (p) => `/api/conversations/${p.conversation_id}/confirmations/${encodeURIComponent(p.call_id)}/confirm`,
+        (p) => ({ msg_id: p.msg_id, data: p.data, always_allow: p.always_allow ?? false })
+      ),
+      (p) => ({ conversation_id: p.conversation_id, call_id: p.call_id, answer: p.data })
     ),
     list: httpGet<IConfirmation<unknown>[], { conversation_id: string }>(
       (p) => `/api/conversations/${p.conversation_id}/confirmations`
